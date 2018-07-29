@@ -1,20 +1,28 @@
 // libs
-import {Store} from '@ngrx/store';
+import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs/Observable';
 
 // app
-import {FormComponent, RouterExtensions} from '../../frameworks/core/index';
-import {NameListService} from '../../frameworks/app/index';
+import { RouterExtensions, Config } from '../../modules/core/index';
+import { IAppState, getNames } from '../../modules/ngrx/index';
+import { NameList } from '../../modules/sample/index';
 
-@FormComponent({
+@Component({
   moduleId: module.id,
   selector: 'sd-home',
   templateUrl: 'home.component.html',
   styleUrls: ['home.component.css']
 })
-export class HomeComponent {
-  public newName: string = '';
-  constructor(private store: Store<any>, public nameListService: NameListService, public routerext: RouterExtensions) {
+export class HomeComponent implements OnInit {
+  public names$: Observable<any>;
+  public newName: string;
 
+  constructor(private store: Store<IAppState>, public routerext: RouterExtensions) {}
+
+  ngOnInit() {
+    this.names$ = this.store.let(getNames);
+    this.newName = '';
   }
 
   /*
@@ -22,12 +30,14 @@ export class HomeComponent {
    * @returns return false to prevent default form submit behavior to refresh the page.
    */
   addName(): boolean {
-    this.nameListService.add(this.newName);
+    this.store.dispatch(new NameList.AddAction(this.newName));
     this.newName = '';
     return false;
   }
 
   readAbout() {
+    // Try this in the {N} app
+    // {N} can use these animation options
     this.routerext.navigate(['/about'], {
       transition: {
         duration: 1000,
